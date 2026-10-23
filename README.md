@@ -1,8 +1,8 @@
 # Haven — a calm home screen for LG webOS
 
-[![Haven Home: a night landscape with a floating cabin, the clock, and five apps on a dark glass dock. Opens the showcase video.](docs/haven-showcase.jpg)](docs/haven-showcase.mp4)
+[![Haven Home: a night landscape with a floating cabin, the clock, and five apps on a dark glass dock. Opens the showcase video.](docs/haven-showcase.jpg)](https://cdn.jsdelivr.net/gh/yashm24-collab/haven@fdeee60/docs/haven-showcase.mp4)
 
-**[Watch the 25-second showcase](docs/haven-showcase.mp4)** (sound on): the TV turning on to "Welcome home", the
+**[Watch the 25-second showcase](https://cdn.jsdelivr.net/gh/yashm24-collab/haven@fdeee60/docs/haven-showcase.mp4)** (sound on): the TV turning on to "Welcome home", the
 dock, the time of day and the World Clock. It was made with Remotion from Haven's own stylesheet, videos and
 brand marks.
 
