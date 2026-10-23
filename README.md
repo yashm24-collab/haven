@@ -1,4 +1,65 @@
-# Clean Your TV — LG webOS
+# Haven — a calm home screen for LG webOS
+
+![Haven Home: a night landscape with a floating cabin, the clock, and five apps on a dark glass dock](docs/haven-home.jpg)
+
+*The browser preview with demo apps (`python3 scripts/preview.py --open`).*
+
+Haven is a redesigned launcher for [Clean Your TV — LG webOS](https://github.com/Razdva122/clean-your-tv-lg-webos).
+It keeps that project's installer, Home Helper and recovery path, and replaces what you see:
+
+- **A landscape that follows the day.** Morning, day and night pictures with slow mist and light on
+  the water, looping without a seam.
+- **"Welcome home" at power-on.** A five-second intro that ends on the first frame of Home. Any
+  button skips it.
+- **Five apps on dark glass.** Brand marks on the dock; the focused app glows in its own colour and
+  grows slightly. **All apps** holds the rest, the TV's inputs and LG's apps.
+- **A glass orb that opens a World Clock.** Up to eight cities on a glowing globe, with the current
+  weather.
+- **Quiet type and motion.** Instrument Serif and Geist; motion uses only transform and opacity,
+  with no bounce.
+
+**Tested on one TV only:** LG 50UA83506LA (webOS 25), No-root Edition. A successful install does not
+mean it works on your TV: run the [installation checks](docs/INSTALL.md#7-verify-before-daily-use).
+Dock motion has not been re-measured on the TV since the last change. Root Edition and Software
+updates are not adapted to Haven (Haven hides the Software updates button).
+
+### Install Haven
+
+The installer is unchanged: `./install.sh <TV IP>` (see [Get started](#get-started)) builds and
+installs Haven together with Home Helper. The dock shows the first five installed apps from
+`dockApps` in `launcher/config.js`, and fills any free places from your app list.
+
+To reinstall only Haven after a change (Node.js 20+):
+
+```sh
+(cd lumen && npm ci)
+DEVICE=<your ares-setup-device name> lumen/install.sh
+```
+
+`lumen/install.sh` also makes the JioHotstar dock mark from your TV's own icon. That file stays on
+your computer; without it, the tile shows the TV's icon.
+
+### Your own landscapes
+
+The pictures and videos in `launcher/assets/` are prebuilt. To use your own, save pictures of at
+least 1920×1080 with no text as `lumen/public/scene-morning.jpg`, `scene-day.jpg` and
+`scene-night.jpg`, then run `bash lumen/render.sh` (Remotion; it takes a while). Remotion is free
+for individuals and small companies; see its [license](https://www.remotion.dev/license).
+
+### Network and stored data
+
+- The only network request goes to `api.open-meteo.com`, while the World Clock is open (when it
+  opens, then every five minutes), with the coordinates of the listed cities. No key or account.
+- Haven keeps four values in the launcher's local storage: `lumen.cities` (World Clock cities),
+  `lumen.wx` (the last weather), `lumen.last` (the dock app to focus) and `lumen.still` (Pause scene
+  motion).
+
+The rest of this page is the upstream README. It still describes the installer, Home Helper, the
+remote controls and recovery; its screenshots show the original launcher.
+
+---
+
+## Clean Your TV — LG webOS
 
 **A clean home screen for LG webOS. No root. No always-on computer.**
 
@@ -204,6 +265,7 @@ root-edition/      Read-only doctor, local metadata planner and development gate
 Built on the work of [OmkarK97/webos-vibehack](https://github.com/OmkarK97/webos-vibehack)
 and [Gathin23/cleanyourtv](https://github.com/Gathin23/cleanyourtv).
 MIT-licensed project code; Outfit uses SIL OFL and the bundled ws library uses MIT.
+Haven's fonts, Rive runtime, brand marks and weather data are listed in the notices.
 See [LICENSE](LICENSE) and [third-party notices](THIRD_PARTY_NOTICES.md).
 
 No firmware images, extracted proprietary binaries, TV credentials or personal

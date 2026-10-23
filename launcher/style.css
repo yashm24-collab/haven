@@ -1,329 +1,195 @@
-/* Sizes are the Android launcher's dp values doubled: webOS renders web apps at 1920x1080. */
+/* Haven. Layout is fixed at 1920x1080 (webOS draws web apps at 1080p, 2x internally).
+   Motion: transform and opacity only, one easing, no bounce (PRD §8). Geometry shared with lumen/src/layout.ts. */
 
-@font-face {
-  font-family: 'Outfit';
-  src: url('fonts/outfit.ttf') format('truetype');
-  font-weight: 100 900;
+/* Type: Instrument Serif for the big words, Geist for everything else (owner's pick, option A). Both OFL, bundled. */
+@font-face { font-family: 'Instrument Serif'; src: url('fonts/instrument-serif-400.woff2') format('woff2'); font-weight: 400; }
+@font-face { font-family: 'Geist'; src: url('fonts/geist-200.woff2') format('woff2'); font-weight: 200; }
+@font-face { font-family: 'Geist'; src: url('fonts/geist-300.woff2') format('woff2'); font-weight: 300; }
+@font-face { font-family: 'Geist'; src: url('fonts/geist-400.woff2') format('woff2'); font-weight: 400; }
+@font-face { font-family: 'Geist'; src: url('fonts/geist-500.woff2') format('woff2'); font-weight: 500; }
+
+:root {
+  --bg: #14110e;
+  --text: #f3ece1;
+  --text-2: rgba(243, 236, 225, .64);
+  --accent: #e6b06a;
+  --accent-rim: rgba(247, 229, 205, .9);   /* CleanYourTV GlassView accent rim: accent lifted towards white */
+  --calm: cubic-bezier(.32, .72, 0, 1);
+  --move: 260ms;
+  --fade: 420ms;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); color: var(--text);
+  font-family: 'Geist', sans-serif; cursor: default; }
+h2 { font: 400 48px/1 'Instrument Serif', serif; letter-spacing: -.005em; }
+.hidden { display: none !important; }
 
-html, body {
-  width: 1920px;
-  height: 1080px;
-  overflow: hidden;
-  background: #000;
-  color: #fff;
-  font-family: 'Outfit', sans-serif;
-  cursor: default;
-}
+/* ---- scene ------------------------------------------------------------------------------------ */
+#scene, #scene > * { position: absolute; inset: 0; width: 1920px; height: 1080px; object-fit: cover; }
+#scene video { opacity: 0; transition: opacity 3s linear; }
+#scene video.on { opacity: 1; }
+#sheetBg { opacity: 0; transition: opacity var(--fade) var(--calm); }
+#dim { background: rgba(10, 8, 6, .62); opacity: 0; transition: opacity var(--fade) var(--calm); }
+body.view-apps #dim { opacity: 1; }
+body.view-settings #sheetBg { opacity: 1; }
+#wash { position: absolute; inset: 0; pointer-events: none; transition: opacity var(--fade) var(--calm);
+  background: linear-gradient(180deg, rgba(10, 8, 6, 0) 60%, rgba(10, 8, 6, .78) 100%),
+              radial-gradient(900px 420px at 0 0, rgba(10, 8, 6, .42), rgba(10, 8, 6, 0)); }
+body:not(.view-home) #wash { opacity: 0; }
 
-/* ---- ambient glow ---------------------------------------------------------------------------- */
+/* ---- home ------------------------------------------------------------------------------------- */
+#home { position: absolute; inset: 0; transition: opacity var(--fade) var(--calm), transform var(--fade) var(--calm); }
+body:not(.view-home) #home { opacity: 0; transform: scale(.985); pointer-events: none; }
 
-.ambient {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 600ms ease;
-  pointer-events: none;
-}
+#orb { position: absolute; left: 96px; top: 64px; width: 96px; height: 96px; }
+/* At rest the marble is warm glass with an amber core, never a dark ball; Rive adds the live glow on top. */
+#marble { position: absolute; inset: 0; border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, rgba(255, 246, 228, .42), rgba(255, 246, 228, 0) 34%),
+              radial-gradient(circle at 50% 62%, rgba(230, 176, 106, .42), rgba(230, 176, 106, .12) 48%, rgba(255, 236, 210, .06) 72%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), inset 0 0 0 1.5px rgba(255, 240, 215, .28), 0 0 22px 2px rgba(230, 176, 106, .28); }
+#orbRive { position: absolute; left: -48px; top: -48px; width: 192px; height: 192px; pointer-events: none; }
 
-/* ---- top shelf ------------------------------------------------------------------------------- */
+#time { position: absolute; left: 224px; top: 62px; }
+/* Thin sans clock (owner's mockup), the serif kept for the app name above the dock. */
+#clock { font: 200 80px/1 'Geist', sans-serif; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+#clock small { font: 400 26px 'Geist', sans-serif; letter-spacing: .06em; margin-left: 10px; color: var(--text-2); }
+#date { margin-top: 10px; font-size: 26px; font-weight: 300; color: var(--text-2); }
 
-#hero {
-  position: absolute;
-  left: 136px;
-  font-size: 96px;
-  font-weight: 300;
-  letter-spacing: -0.02em;
-  line-height: 1;
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 260ms ease, transform 200ms ease;
-  pointer-events: none;
-}
+#topRight { position: absolute; right: 96px; top: 80px; display: flex; gap: 20px; }
+/* CleanYourTV pill glass. */
+.chip { height: 64px; padding: 0 30px; border-radius: 32px; display: flex; align-items: center; font-size: 24px;
+  border: 2px solid rgba(255, 255, 255, .22); background: linear-gradient(180deg, rgba(255, 255, 255, .18), rgba(255, 255, 255, .06));
+  color: var(--text); transition: transform var(--move) var(--calm), border-color var(--move) var(--calm); }
+.chip.round { width: 64px; padding: 0; justify-content: center; }
+.chip svg { width: 32px; height: 32px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+.chip.focused { border-color: var(--accent-rim); transform: scale(1.06);
+  box-shadow: 0 0 4px 2px rgba(230, 176, 106, .44), 0 0 14px 6px rgba(230, 176, 106, .16); }
 
-/* ---- header ---------------------------------------------------------------------------------- */
+#label { position: absolute; left: 100px; top: 668px; font: 400 92px/1 'Instrument Serif', serif; letter-spacing: -.005em; white-space: nowrap;
+  transition: opacity 200ms var(--calm); }
+#label.swap { opacity: 0; }
+#tiles .item { top: 814px; width: 264px; height: 148px; border-radius: 28px; }
+#tiles .item::after { border-radius: 28px; }
+/* Dock magnification (Magic UI Dock, driven by focus instead of the cursor): app.js sets each tile's
+   translateX + scale; tiles grow upward. A soft reflection sits on the shore below (owner's mockup). */
+#tiles > * { transform-origin: 50% 100%; transition: transform var(--move) var(--calm); will-change: transform;
+  -webkit-box-reflect: below 10px linear-gradient(transparent 64%, rgba(255, 255, 255, .2)); }
+/* Dock tiles: one dark glass plate for every app, its crisp brand mark in full colour. The focused plate takes the
+   app's brand colour (council: calm but recognisable). --brand is set per tile from marks.js. */
+#tiles .item.mark { background: linear-gradient(180deg, rgba(52, 44, 37, .66), rgba(18, 15, 12, .74));
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .16); }
+#tiles .item.mark::after { box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .13); }
+#tiles .item.mark img { top: 50%; left: 50%; width: 62%; height: 48%; object-fit: contain; transform: translate(-50%, -50%); }
+#tiles .item.mark.focused { background: linear-gradient(180deg, color-mix(in srgb, var(--brand) 36%, rgba(34, 28, 23, .8)),
+  color-mix(in srgb, var(--brand) 14%, rgba(14, 11, 9, .86))); }
+/* All apps: a glass tile with its label at the end of the dock. */
+#allApps { position: absolute; top: 814px; width: 148px; height: 148px; padding: 0; border-radius: 28px;
+  flex-direction: column; justify-content: center; gap: 12px; font-size: 21px; color: var(--text-2); }
+#allApps svg { width: 40px; height: 40px; }
 
-header {
-  position: absolute;
-  top: 52px;
-  left: 112px;
-  right: 112px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  z-index: 3;
-  transition: opacity 300ms ease, transform 360ms cubic-bezier(0.25, 0.8, 0.3, 1);
-}
+/* Tiles: the TV's own icons, full-bleed on their corner colour (CleanYourTV), or owner art. */
+.item { position: absolute; top: 830px; width: 216px; height: 122px; border-radius: 24px; overflow: hidden; background: #2a2420;
+  transition: transform var(--move) var(--calm); will-change: transform; }
+.item::after { content: ''; position: absolute; inset: 0; border-radius: 24px; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .08); }
+.item img { position: absolute; top: 0; left: 50%; height: 100%; transform: translateX(-50%); }
+.item.glyph img { top: 50%; height: 62%; transform: translate(-50%, -50%); }
+.item.art img { left: 0; width: 100%; height: 100%; object-fit: cover; transform: none; }
+.item.more { display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 26px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, .05)); }
+.item.more svg { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.item.focused { transform: scale(1.06); }
 
-/* Below the dock: the header slides away so the grid gets the whole screen. */
-body.scrolled header {
-  opacity: 0;
-  transform: translateY(-48px);
-  pointer-events: none;
-}
+/* The focus lens: CleanYourTV's GlassView in its accent mode, drawn once and only slid (transform). */
+#lens { position: absolute; left: 0; top: 0; width: 316px; height: 186px; border-radius: 42px; pointer-events: none; opacity: 0;
+  border: 3px solid var(--rim, var(--accent-rim)); overflow: hidden;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .2), rgba(255, 255, 255, .05));
+  box-shadow: 0 0 4px 2px var(--glow-a, rgba(230, 176, 106, .44)), 0 0 18px 7px var(--glow-b, rgba(230, 176, 106, .18));
+  transition: transform var(--move) var(--calm), opacity 200ms var(--calm); will-change: transform; z-index: 4; }
+#lens::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 45%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .4), rgba(255, 255, 255, 0)); }
+#lens.on { opacity: 1; }
+#lens.small { width: 248px; height: 150px; border-radius: 34px; }   /* All apps grid tiles (216x122) */
 
-#greeting {
-  margin-left: 8px;
-  color: rgba(255, 255, 255, 0.55);
-  font-size: 24px;
-  font-weight: 500;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-}
+/* ---- wake ------------------------------------------------------------------------------------- */
+@keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+body.wake #orb { animation: rise 900ms var(--calm) both; }
+body.wake #time, body.wake #topRight { animation: rise 900ms 120ms var(--calm) both; }
+body.wake #label, body.wake #tiles { animation: rise 900ms 240ms var(--calm) both; }
+body.wake #lens.on { animation: fadein 900ms 240ms var(--calm) both; }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
 
-#timeRow { display: flex; align-items: flex-end; }
+/* ---- views ------------------------------------------------------------------------------------ */
+.view { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity var(--fade) var(--calm); }
+body.view-clock #clockView, body.view-apps #appsView, body.view-settings #settingsView { opacity: 1; pointer-events: auto; }
+.viewTitle { position: absolute; left: 96px; top: 80px; }
 
-#clock {
-  font-size: 104px;
-  font-weight: 300;
-  letter-spacing: -0.04em;
-  line-height: 1;
-}
+/* Sheet text sits on the baked glass (geometry: WC_SHEET / SET_SHEET in lumen/src/layout.ts). */
+.sheetText { position: absolute; padding: 44px 40px; }
+#wcSheet { left: 96px; top: 96px; width: 640px; height: 888px; }
+#setSheet { left: 1184px; top: 200px; width: 640px; height: 560px; }
+.sheetText h2 { margin-bottom: 22px; font-size: 40px; color: var(--text-2); }
+.row { position: relative; height: 80px; padding: 0 22px; margin: 0 -22px; border-radius: 18px; display: flex; align-items: center;
+  transition: background var(--move) var(--calm); }
+.row::before { content: ''; position: absolute; left: 0; top: 18px; bottom: 18px; width: 3px; border-radius: 2px; background: var(--accent);
+  opacity: 0; transition: opacity var(--move) var(--calm); }
+.row.focused { background: rgba(255, 255, 255, .09); }
+.row.focused::before { opacity: 1; }
+.row.disabled { color: var(--text-2); }
+.row .name { flex: 1; font-size: 28px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .value { font-size: 24px; color: var(--text-2); }
 
-#ampm {
-  margin: 0 0 16px 12px;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 30px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
+/* World Clock rows */
+#wcPoster, #wcVideo { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+#cityList { position: relative; height: 744px; overflow: hidden; }
+#cityRows { transition: transform var(--move) var(--calm); }
+.city .name { font: 400 38px 'Instrument Serif', serif; }
+.city .sub { display: block; font: 300 18px 'Geist', sans-serif; color: var(--text-2); margin-top: 4px; }
+.city .t { font: 200 34px 'Geist', sans-serif; font-variant-numeric: tabular-nums; min-width: 150px; text-align: right; }
+.city .t small { font: 400 17px 'Geist', sans-serif; letter-spacing: .06em; margin-left: 6px; color: var(--text-2); }
+.city .wx { width: 120px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; font-size: 22px; color: var(--text-2); }
+.wx svg { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+/* Iso-glow rule: accent only on what is live. The focused city's weather is the live one. */
+.city.focused .wx { color: var(--accent); }
+.city.focused .wx svg { filter: drop-shadow(0 0 6px rgba(230, 176, 106, .6)); }
+.menu { display: flex; gap: 12px; }
+.menu .opt { padding: 10px 20px; border-radius: 22px; font-size: 22px; border: 2px solid rgba(255, 255, 255, .18); }
+.menu .opt.focused { border-color: var(--accent-rim); background: rgba(230, 176, 106, .16); }
+#cityDot { position: absolute; left: 0; top: 0; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%;
+  background: #fff3df; box-shadow: 0 0 8px 3px rgba(230, 176, 106, .9), 0 0 26px 10px rgba(230, 176, 106, .45);
+  opacity: 0; transition: opacity 300ms var(--calm); will-change: transform; }
+#cityDot.on { opacity: 1; }
 
-.divider {
-  width: 2px;
-  height: 52px;
-  margin: 0 32px 16px;
-  background: rgba(255, 255, 255, 0.2);
-}
+/* All apps */
+#appsPort { position: absolute; left: 0; top: 170px; width: 1920px; height: 910px; overflow: hidden; }
+#appsGrid { position: relative; transition: transform var(--move) var(--calm); }
+#appsGrid .section { position: absolute; left: 96px; font-size: 22px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-2); }
+#appsGrid .item { top: auto; }
+#appsGrid .caption { position: absolute; width: 216px; text-align: center; font-size: 22px; color: var(--text-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-#date {
-  margin-bottom: 18px;
-  color: rgba(255, 255, 255, 0.65);
-  font-size: 28px;
-  font-weight: 400;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  white-space: pre;
-}
-
-#topButtons { display: flex; margin-bottom: 12px; }
-
-/* Frosted pill, tvOS style. */
-.pill {
-  display: flex;
-  align-items: center;
-  height: 84px;
-  margin-left: 20px;
-  padding: 0 40px 0 32px;
-  border-radius: 42px;
-  border: 2px solid rgba(255, 255, 255, 0.22);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08));
-  color: #fff;
-  font-size: 30px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-  transition: background 160ms ease, color 160ms ease, transform 200ms ease;
-}
-
-.pill svg { width: 44px; height: 44px; margin-right: 18px; fill: currentColor; }
-
-.pill.focused {
-  background: rgba(255, 255, 255, 0.96);
-  border-color: transparent;
-  color: #000;
-  transform: scale(1.04);
-}
-
-/* ---- grid ------------------------------------------------------------------------------------ */
-
-#viewport {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-}
-
-#stage {
-  position: absolute;
-  inset: 0;
-  transition: transform 420ms cubic-bezier(0.25, 0.8, 0.3, 1);
-}
-
-/* The tvOS lighter band behind the dock row. */
-#dockBand {
-  position: absolute;
-  border-radius: 52px;
-  background: #141416;
-  border: 2px solid rgba(255, 255, 255, 0.12);
-}
-
-.item {
-  position: absolute;
-  width: 360px;
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 400ms ease, transform 400ms cubic-bezier(0.2, 0.8, 0.3, 1),
-    left 320ms cubic-bezier(0.25, 0.8, 0.3, 1), top 320ms cubic-bezier(0.25, 0.8, 0.3, 1);
-}
-
-.item.shown { opacity: 1; transform: none; }
-
-.item.dock .name { display: none; }
-
-/* Rearranging: the held tile wiggles and floats above the others; the glass steps aside. */
-.item.moving { z-index: 2; }
-
-.item.moving .card {
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6);
-  animation: wiggle 240ms ease-in-out infinite alternate;
-}
-
-@keyframes wiggle {
-  from { transform: scale(1.1) rotate(-1.2deg); }
-  to { transform: scale(1.1) rotate(1.2deg); }
-}
-
-body.editing #glass { opacity: 0 !important; }
-
-.card {
-  position: relative;
-  width: 360px;
-  height: 202px;
-  border-radius: 32px;
-  overflow: hidden;
-  background: #1c1c1e;
-  transition: transform 180ms ease;
-}
-
-/* Faint rim so black tiles (Apple TV) still read against the black page. */
-.card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 32px;
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.1);
-}
-
-.item.focused .card {
-  transform: scale(1.1);
-  transition: transform 260ms cubic-bezier(0.34, 1.6, 0.5, 1);
-}
-
-.card img {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  height: 100%;
-  transform: translateX(-50%);
-}
-
-/* Transparent system icons: smaller glyph, centred. */
-.card.glyph img {
-  top: 50%;
-  height: 62%;
-  transform: translate(-50%, -50%);
-}
-
-.name {
-  height: 44px;
-  margin-top: 14px;
-  color: rgba(255, 255, 255, 0.95);
-  font-size: 28px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  opacity: 0;
-  transform: translateY(-12px);
-  transition: opacity 220ms ease, transform 220ms ease;
-}
-
-.item.focused .name { opacity: 1; transform: translateY(8px); }
-
-/* The single floating glass highlight that springs between tiles. */
-#glass {
-  position: absolute;
-  left: 0;
-  top: 0;
-  border-radius: 47px;
-  border: 3px solid rgba(255, 255, 255, 0.8);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.07));
-  box-shadow: 0 0 4px 2px rgba(255, 255, 255, 0.19), 0 0 12px 4px rgba(255, 255, 255, 0.08);
-  overflow: hidden;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 180ms ease, transform 520ms cubic-bezier(0.3, 1.35, 0.45, 1);
-}
-
-/* Bright top specular. */
-#glass::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 45%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
-}
-
-/* ---- inputs dropdown ------------------------------------------------------------------------- */
-
-#inputsPanel {
-  position: absolute;
-  z-index: 5;
-  padding: 16px;
-  border-radius: 40px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  background: linear-gradient(180deg, rgba(42, 42, 46, 0.95), rgba(22, 22, 24, 0.96));
-  transform-origin: top;
-  transition: opacity 220ms ease, transform 220ms cubic-bezier(0.2, 0.8, 0.3, 1);
-}
-
-#inputsPanel.hidden { opacity: 0; transform: translateY(-16px) scaleY(0.92); pointer-events: none; }
-
-.inputRow {
-  display: flex;
-  align-items: center;
-  height: 84px;
-  padding: 0 24px;
-  border-radius: 24px;
-  font-size: 30px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.inputRow svg { width: 40px; height: 40px; margin-right: 20px; fill: currentColor; }
-
-.inputRow.focused { background: rgba(255, 255, 255, 0.96); color: #000; }
-
-.separator { height: 2px; margin: 12px 24px; background: rgba(255, 255, 255, 0.12); }
-
-/* ---- toast ----------------------------------------------------------------------------------- */
-
-#toast {
-  position: absolute;
-  left: 50%;
-  bottom: 80px;
-  padding: 20px 40px;
-  border-radius: 40px;
-  background: rgba(40, 40, 44, 0.95);
-  font-size: 28px;
-  opacity: 0;
-  transform: translateX(-50%);
-  transition: opacity 200ms ease;
-  z-index: 6;
-}
-
+/* ---- launch curtain, toast -------------------------------------------------------------------- */
+#curtain { position: absolute; inset: 0; z-index: 20; background: #000; opacity: 0; pointer-events: none; display: flex;
+  align-items: center; justify-content: center; font-size: 24px; color: var(--text-2); transition: opacity 400ms var(--calm); }
+#curtain.on { opacity: 1; }
+#toast { position: absolute; left: 50%; bottom: 72px; z-index: 21; padding: 18px 36px; border-radius: 34px; font-size: 26px;
+  border: 2px solid rgba(255, 255, 255, .2); background: linear-gradient(180deg, rgba(48, 40, 34, .96), rgba(28, 24, 20, .96));
+  opacity: 0; transform: translateX(-50%); transition: opacity 240ms var(--calm); }
 #toast.shown { opacity: 1; }
 
-/* Recovery shares the shelf styling and navigation order. Give the date
-   its own line only while the fourth action needs room beside the clock. */
-#topButtons { flex-shrink: 0; }
-#btnResumeHome.hidden { display: none; }
-body.helper-stopped #timeRow { width: 400px; }
-body.helper-stopped .divider { display: none; }
-body.helper-stopped #date { position: absolute; left: 8px; top: 150px; margin: 0; font-size: 24px; }
+/* ---- "Welcome home" startup animation ---------------------------------------------------------- */
+#intro { position: absolute; inset: 0; z-index: 15; background: #000; pointer-events: none; transition: opacity 600ms var(--calm); }
+#intro video { width: 1920px; height: 1080px; }
+#intro.done { opacity: 0; }
+body.intro #home, body.intro #wash { opacity: 0; transition: none; }
+
+/* ---- pause scene motion / reduced motion: stills, short fades ---------------------------------- */
+body.still #scene video { display: none; }
+body.still * { animation: none !important; transition-duration: 150ms !important; }
+
+/* ---- Home settings panel (CleanYourTV renewal), restyled to Haven ----------------------------- */
+#renewalPanel { background: rgba(10, 8, 6, .86) !important; }
+#renewalPanel .renewal-card { background: linear-gradient(180deg, #2a241f, #1c1814) !important; border-color: rgba(255, 255, 255, .16) !important; border-radius: 40px !important; }
+#renewalPanel .renewal-card h2 { font: 400 48px 'Instrument Serif', serif; }
+#renewalPanel .renewal-actions button:focus { border-color: var(--accent-rim) !important; background: rgba(230, 176, 106, .18) !important; }
+#renewalUpdates { display: none !important; }

@@ -11,11 +11,14 @@ from urllib.parse import unquote, urlsplit
 import webbrowser
 
 ROOT = Path(__file__).resolve().parents[1]
+LAUNCHER = ROOT / 'launcher'
 LAUNCHER_FILES = {
     'index.html', 'style.css', 'renewal-panel.css', 'app.js', 'config.js',
     'user-data.js', 'update-panel.js', 'renewal-panel.js', 'profile-bootstrap.js',
     'native-bootstrap.js', 'helper-control.js', 'fonts/outfit.ttf', 'fonts/OFL.txt',
-}
+    'lumen-math.js', 'marks.js',
+} | {p.relative_to(LAUNCHER).as_posix()                      # Haven's videos, Rive orb, fonts and brand marks
+     for folder in ('assets', 'fonts', 'marks') for p in (LAUNCHER / folder).iterdir() if p.is_file()}
 DEMO_APPS = [
     ('youtube', 'YouTube', '#ffffff'),
     ('netflix', 'Netflix', '#ffffff'),

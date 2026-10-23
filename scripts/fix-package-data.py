@@ -20,6 +20,8 @@ with tarfile.open(fileobj=io.BytesIO(data[2]),mode='r:gz') as src,tarfile.open(f
    assert entry.isdir()
    entry.uid=5999;entry.gid=5000;entry.uname='prisoner';entry.gname='jailer';entry.mode=0o770
    changed.append(name)
+  if entry.isfile() and name.rsplit('/',1)[-1] in ('detach','relay','resume'):
+   entry.mode|=0o755 # ponytail: Windows checkouts have no exec bit; native main + spawned helpers need it
   dst.addfile(entry,src.extractfile(entry) if entry.isfile() else None)
 assert len(changed)==2,changed
 data[2]=out.getvalue();p.write_bytes(write_ar(members))

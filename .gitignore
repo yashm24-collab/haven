@@ -19,3 +19,12 @@ metadata-plan*.json
 appinfo-copy.json
 app-info.json
 saved-probe.txt
+
+# Haven: the JioHotstar mark is cut from the TV's own icon (lumen/marks.js); render checks; local setup
+launcher/marks/hotstar.png
+lumen/node_modules/
+lumen/out/
+env.sh
+run.sh
+bin/
+py/
