@@ -1,8 +1,10 @@
 # Haven — a calm home screen for LG webOS
 
-![Haven Home: a night landscape with a floating cabin, the clock, and five apps on a dark glass dock](docs/haven-home.jpg)
+[![Haven Home: a night landscape with a floating cabin, the clock, and five apps on a dark glass dock. Opens the showcase video.](docs/haven-showcase.jpg)](docs/haven-showcase.mp4)
 
-*The browser preview with demo apps (`python3 scripts/preview.py --open`).*
+**[Watch the 25-second showcase](docs/haven-showcase.mp4)** (sound on): the TV turning on to "Welcome home", the
+dock, the time of day and the World Clock. It was made with Remotion from Haven's own stylesheet, videos and
+brand marks.
 
 Haven is a redesigned launcher for [Clean Your TV — LG webOS](https://github.com/Razdva122/clean-your-tv-lg-webos).
 It keeps that project's installer, Home Helper and recovery path, and replaces what you see:
